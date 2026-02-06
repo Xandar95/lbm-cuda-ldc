@@ -28,7 +28,9 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 After setting-up the environment, compile using:
 - nvcc -c lbm_kernel.cu -o lbm_kernel
 - nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
-The solver outputs velocity (u, v, w components), pressure, and streamfunctions (for XY, XZ, YZ planes)
+- Change the lattice domain sizes as desired
+- Change the memory access patterns in the CUDA kernel as necessary (Note: 1D thread blocks results in better memory coalescence for this algorithm)
+- The solver outputs velocity (u, v, w components), pressure, and streamfunctions (for XY, XZ, YZ planes)
 
 ## Post-Processing
 Post-processing of the results done using MATLAB and includes:
