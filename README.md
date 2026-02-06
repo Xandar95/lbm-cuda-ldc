@@ -1,6 +1,6 @@
 # GPU-Accelerated 3D LBM Solver for Lid Driven Cavity Flow
 
-This repository contains serial and GPU-accelerated implementations of a 3D Lattice Boltzmann Method (LBM) for the lid driven cavity flow benchmark test.
+This repository contains serial and GPU-accelerated implementations of a 3D Lattice Boltzmann Method (LBM) solver for the lid driven cavity flow benchmark test.
 
 ## Features
 - D3Q27 lattice
