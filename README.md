@@ -9,7 +9,7 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - Pull streaming on parallel code with Structure-of-Arrays (SoA) memory layout
 - Both LBM streaming/collision step and boundary conditions embedded in CUDA kernel
 - Written in Fortran (host) and CUDA C++
-- Only the global memory and constant memory was utilized
+- Only global memory and constant memory utilized
 
 ## Directory Structure
 - serial/ - Serial Fortran implementation
