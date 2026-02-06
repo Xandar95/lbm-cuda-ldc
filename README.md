@@ -14,7 +14,7 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 ## Directory Structure
 - serial/ - Serial Fortran implementation
 - gpu/ - CUDA kernels and interfaces
-- data/ - Output files (.dat)
+- data/ - Sample output file (.dat)
 - figures/ - Post-processed plots including velocity validation plots against Ghia et al. (1982)
 
 ## Compilation Requirements
