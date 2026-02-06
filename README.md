@@ -35,6 +35,7 @@ After setting-up the environment, compile using:
 ## Post-Processing
 Post-processing of the results done using MATLAB and includes:
 - Solver data loading
-- Velocity contour streamline plotting
+- 3D vector plot of the cavity
+- Velocity contour and streamline plotting
 - Validation plots against reference data
 - Pressure contour and pressure isosurface plotting
