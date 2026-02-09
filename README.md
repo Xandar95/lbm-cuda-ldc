@@ -30,7 +30,7 @@ After setting-up the environment, compile using:
 - nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
 - Change the lattice domain sizes as desired
 - Change the memory access patterns in the CUDA kernel as necessary (Note: 1D thread blocks results in better memory coalescence for this algorithm)
-- The solver outputs velocity (u, v, w components), pressure, and streamfunctions (for XY, XZ, YZ planes)
+- The solver outputs velocity (u, v, w components), pressure, and streamfunction for XY plane
 
 ## Post-Processing
 Post-processing of the results done using MATLAB and includes:
