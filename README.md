@@ -16,6 +16,7 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - gpu/ - CUDA kernels and interfaces
 - data/ - Sample output file (.dat)
 - figures/ - Post-processed plots including velocity validation plots against Ghia et al. (1982)
+- post-processing/ - Post-processing script and validation data from Ghia et al. (1982)
 
 ## Compilation Requirements
 - NVIDIA GPU (Compute Capability >= 8.0) 
@@ -24,6 +25,17 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - gfortran for serial code
 
 ## Build Instructions
-After setting-up the environment compile using:
-nvcc -c lbm_kernel.cu -o lbm_kernel
-nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
+After setting-up the environment, compile using:
+- nvcc -c lbm_kernel.cu -o lbm_kernel
+- nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
+- Change the lattice domain sizes as desired
+- Change the memory access patterns in the CUDA kernel as necessary (Note: 1D thread blocks results in better memory coalescence for this algorithm)
+- The solver outputs velocity (u, v, w components), pressure, and streamfunctions (for XY, XZ, YZ planes)
+
+## Post-Processing
+Post-processing of the results done using MATLAB and includes:
+- Solver data loading
+- 3D vector plot of the cavity
+- Velocity contour and streamline plotting
+- Validation plots against reference data
+- Pressure contour and pressure isosurface plotting
