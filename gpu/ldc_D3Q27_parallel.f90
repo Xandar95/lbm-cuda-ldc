@@ -8,13 +8,13 @@ program lid_driven_cavity_D3Q27_parallel
     integer :: nstep = 10000 ! number of time steps
     integer :: i, j, k, l, t
     real(c_double) :: xl, yl, zl, dx, dy, dz, nu, Re, c2, omega, u_lid, cu, u2
-    integer :: i_mid = nx / 2, j_mid = ny / 2, k_mid = nz / 2 ! mid-plane indices for streamfunction calculation
+    integer :: k_mid = nz / 2 ! mid-plane index for streamfunction calculation
     integer :: count_start, count_end, count_rate ! for timing
 
     ! Variable arrays
     real(c_double), dimension(nx, ny, nz) :: rho, u, v, w, p, x, y, z
     real(c_double), target, dimension(nx, ny, nz, 0:26) :: f ! distribution function
-    real(c_double), dimension(nx, ny) :: u_xz, u_xy, w_yz, psi_xz, psi_xy, psi_yz ! for streamfunction calculation
+    real(c_double), dimension(nx, ny) :: u_xy, psi_xy ! for streamfunction calculation
 
     ! Constant arrays
     real(c_double), target, dimension(0:26) :: weights
@@ -178,15 +178,8 @@ program lid_driven_cavity_D3Q27_parallel
     end do
     close(10)
 
-    ! Streamfunction calculation 
+    ! Streamfunction calculation (Optional, only for 2D slices)
     ! Extract velocity components on mid planes
-    ! XZ plane at y = ny/2
-    do k = 1, nz
-        do i = 1, nx
-            u_xz(i, k) = u(i, j_mid, k)
-        end do
-    end do
-
     ! XY plane at z = nz/2
     do j = 1, ny
         do i = 1, nx
@@ -194,21 +187,7 @@ program lid_driven_cavity_D3Q27_parallel
         end do
     end do
 
-    ! YZ plane at x = nx/2
-    do k = 1, nz
-        do j = 1, ny
-            w_yz(j, k) = w(i_mid, j, k)
-        end do
-    end do
-
     ! Simple finite difference to compute streamfunction (2D)
-    ! XZ plane
-    psi_xz = 0.0d0
-    do k = 2, nz
-        do i = 1, nx
-            psi_xz(i, k) = psi_xz(i, k-1) + u_xz(i, k-1) * dz
-        end do
-    end do
 
     ! XY plane
     psi_xy = 0.0d0
@@ -218,39 +197,16 @@ program lid_driven_cavity_D3Q27_parallel
         end do
     end do
 
-    ! YZ plane
-    psi_yz = 0.0d0
-    do k = 1, nz
-        do j = 2, ny
-            psi_yz(j, k) = psi_yz(j-1, k) + w_yz(j-1, k) * dy
-        end do
-    end do
-
     ! Output streamfunction data
-    open(unit=20, file='streamfunction_XZ.dat', status='replace')
-    do k = 1, nz
+
+    open(unit=20, file='streamfunction_XY.dat', status='replace')
+    do j = 1, ny
         do i = 1, nx
-            write(20, '(7(ES16.8, 1X))') x(i, j_mid, k), z(i, j_mid, k), psi_xz(i, k)
+            write(20, '(7(ES16.8, 1X))') x(i, j, k_mid), y(i, j, k_mid), psi_xy(i, j)
         end do
     end do
     close(20)
 
-    open(unit=30, file='streamfunction_XY.dat', status='replace')
-    do j = 1, ny
-        do i = 1, nx
-            write(30, '(7(ES16.8, 1X))') x(i, j, k_mid), y(i, j, k_mid), psi_xy(i, j)
-        end do
-    end do
-    close(30)
-
-    open(unit=40, file='streamfunction_YZ.dat', status='replace')
-    do k = 1, nz
-        do j = 1, ny
-            write(40, '(7(ES16.8, 1X))') y(i_mid, j, k), z(i_mid, j, k), psi_yz(j, k)
-        end do
-    end do
-    close(40)
-
-    print *, 'Simulation completed. Results written to ldc_D3Q27_parallel.dat & streamfunction_XY.dat & streamfunction_XZ.dat & streamfunction_YZ.dat'
+    print *, 'Simulation completed. Results written to ldc_D3Q27_parallel.dat & streamfunction_XY.dat'
     
 end program lid_driven_cavity_D3Q27_parallel
