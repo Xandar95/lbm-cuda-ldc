@@ -1,16 +1,24 @@
 %% Lid-Driven Cavity D3Q27
 clear all
 clc
+
+set(groot,'defaultAxesFontSize',10)
+set(groot,'defaultAxesLabelFontSizeMultiplier',1.2)
+set(groot,'defaultLineLineWidth',1.6)
+set(groot,'defaultLineMarkerSize',7)
+set(groot,'defaultFigureColor','w')
+set(groot,'defaultTextInterpreter','latex')
+set(groot,'defaultAxesTickLabelInterpreter','latex')
+set(groot,'defaultLegendInterpreter','latex')
+
 %% Load data matrices
 data = readmatrix('ldc_D3Q27_parallel.dat');
-str_xz = readmatrix('streamfunction_XZ.dat');
 str_xy = readmatrix('streamfunction_XY.dat');
-str_yz = readmatrix('streamfunction_YZ.dat');
 
-% Grid size
-nx = 76;
-ny = 76;
-nz = 76;
+% Grid size (change according to the simulation resolution)
+nx = 126;
+ny = 126;
+nz = 126;
 
 X = reshape(data(:,1), nx, ny, nz); 
 Y = reshape(data(:,2), nx, ny, nz); 
@@ -19,12 +27,10 @@ U = reshape(data(:,4), nx, ny, nz);
 V = reshape(data(:,5), nx, ny, nz);
 W = reshape(data(:,6), nx, ny, nz); 
 P = reshape(data(:,7), nx, ny, nz);
-PSI_XZ = reshape(str_xz(:,3), nx, ny);
 PSI_XY = reshape(str_xy(:,3), nx, ny);
-PSI_YZ = reshape(str_yz(:,3), nx, ny);
 
 %% 3D Vector Plot
-step = 2; % to reduce density of the 3D vector plot
+step = 10; % to reduce density of the 3D vector plot
 figure(1)
 quiver3( ...
     X(1:step:end,1:step:end,1:step:end), ...
@@ -44,9 +50,6 @@ ix = round(nx/2);
 iy = round(ny/2);
 iz = round(nz/2);
 
-% Downsample arrows in quiver
-step_q = 2;
-
 % XZ Plane (y = mid)
 figure(2)
 X_xz = squeeze(X(:,iy,:));
@@ -59,33 +62,23 @@ subplot(1,3,1)
 contourf(X_xz, Z_xz, U_xz, 30, 'LineColor','none')
 colorbar
 xlabel('x'); ylabel('z')
-title('u-velocity on XZ plane (y = mid)', 'FontSize',8)
+title('u-velocity on XZ plane (y = mid)')
 axis equal tight
 
 subplot(1,3,2)
 contourf( X_xz, Z_xz, V_xz, 30, 'LineColor','none')
 colorbar
-title('v-velocity on XZ plane (y = mid)', 'FontSize',8)
+title('v-velocity on XZ plane (y = mid)')
 axis equal tight
 
 subplot(1,3,3)
 contourf(X_xz, Z_xz, W_xz, 30, 'LineColor','none')
 colorbar
-title('w-velocity on XZ plane (y = mid)', 'FontSize',8)
-axis equal tight
-
-% Streamlines XZ plane
-figure(3)
-contour(X_xz, Z_xz, PSI_XZ, 30, 'k')
-hold on
-xlabel('x')
-ylabel('z')
-xlim([0 1])
-ylim([0 1])
+title('w-velocity on XZ plane (y = mid)')
 axis equal tight
 
 % XY Plane (z = mid)
-figure(4)
+figure(3)
 X_xy = squeeze(X(:,:,iz));
 Y_xy = squeeze(Y(:,:,iz));
 U_xy = squeeze(U(:,:,iz));
@@ -96,24 +89,24 @@ subplot(1,3,1)
 contourf(X_xy, Y_xy, U_xy, 30, 'LineColor','none')
 colorbar
 xlabel('x'); ylabel('y')
-title('u-velocity on XY plane (z = mid)', 'FontSize',8)
+title('u-velocity on XY plane (z = mid)')
 axis equal tight
 
 subplot(1,3,2)
 contourf(X_xy, Y_xy, V_xy, 30, 'LineColor','none')
 colorbar
-title('v-velocity on XY plane (z = mid)', 'FontSize',8)
+title('v-velocity on XY plane (z = mid)')
 axis equal tight
 
 subplot(1,3,3)
 contourf(X_xy, Y_xy, W_xy, 30, 'LineColor','none')
 colorbar
-title('w-velocity on XY plane (z = mid)', 'FontSize',8)
+title('w-velocity on XY plane (z = mid)')
 axis equal tight
 
 % Streamlines XY plane
-figure(5)
-contour(X_xy, Y_xy, PSI_XY, 30, 'k')
+figure(4)
+contour(X_xy, Y_xy, PSI_XY, 40, 'k')
 hold on
 xlabel('x')
 ylabel('y')
@@ -122,7 +115,7 @@ ylim([0 1])
 axis equal tight
 
 % YZ Plane (x = mid)
-figure(6)
+figure(5)
 Y_yz = squeeze(Y(ix,:,:));
 Z_yz = squeeze(Z(ix,:,:));
 U_yz = squeeze(U(ix,:,:));
@@ -133,38 +126,29 @@ subplot(1,3,1)
 contourf(Z_yz, Y_yz, U_yz, 30, 'LineColor','none')
 colorbar
 xlabel('z'); ylabel('y')
-title('u-velocity on YZ plane (x = mid)', 'FontSize',8)
+title('u-velocity on YZ plane (x = mid)')
 axis equal tight
 
 subplot(1,3,2)
 contourf(Z_yz, Y_yz, V_yz, 30, 'LineColor','none')
 colorbar
-title('v-velocity on YZ plane (x = mid)', 'FontSize',8)
+title('v-velocity on YZ plane (x = mid)')
 axis equal tight
 
 subplot(1,3,3)
 contourf(Z_yz, Y_yz, W_yz, 30, 'LineColor','none')
 colorbar
-title('w-velocity on YZ plane (x = mid)', 'FontSize',8)
-axis equal tight
-
-% Streamlines YZ plane
-figure(7)
-contour(Z_yz, Y_yz, PSI_YZ, 30, 'k')
-hold on
-xlabel('z')
-ylabel('y')
-xlim([0 1])
-ylim([0 1])
+title('w-velocity on YZ plane (x = mid)')
 axis equal tight
 
 %% XY-plane velocity plots for validation against Ghia et. el
 %  Plot U velocity profile at x=0.5
-figure(8)
+figure(6)
 h_u = plot(U_xy(ix,:), Y_xy(ix,:), 'Color', 'blue', 'LineWidth', 1, ...
            'DisplayName', 'u-velocity at x/H=0.5');
-ylabel('y/H', 'FontSize', 8)
-xlabel('u/U_{lid}', 'FontSize', 8)
+ylabel('y/H')
+xlabel('$u/U_{\mathrm{lid}}$')
+title('$Re = 100$')
 ylim([0 1])
 xlim([min(U_xy(ix,:))*1.2 max(U_xy(ix,:))*1.2])
 hold on
@@ -179,11 +163,12 @@ h_u_ghia = plot(u_ghia, y_ghia, '--+', 'MarkerSize', 6, ...
 legend([h_u, h_u_ghia], 'Location', 'best')
 
 % Plot V velocity profile
-figure(9)
+figure(7)
 h_v = plot(X_xy(:,iy), V_xy(:,iy), 'Color', 'red', 'LineWidth', 1, ...
            'DisplayName', 'v-velocity at y/H=0.5');
-xlabel('x/H', 'FontSize', 8)
-ylabel('v/U_{lid}', 'FontSize', 8)
+xlabel('x/H')
+ylabel('$v/U_{\mathrm{lid}}$')
+title('$Re = 100$')
 xlim([0 1])
 ylim([min(V_xy(:,iy))*1.2 max(V_xy(:,iy))*1.2])
 hold on
@@ -204,7 +189,7 @@ y_vec = squeeze(Y(1,:,1));
 z_vec = squeeze(Z(1,1,:));
 [Xg, Zg, Yg] = meshgrid(x_vec, z_vec, y_vec);
 
-figure(10)
+figure(8)
 P_permuted = permute(P, [3,1,2]);
 p_iso = patch(isosurface(Xg, Zg, Yg, P_permuted, mean(P_permuted(:))));
 isonormals(Xg, Zg, Yg, P_permuted, p_iso)
@@ -217,7 +202,7 @@ view(3)
 camlight
 lighting gouraud
 
-figure(11)
+figure(9)
 subplot(1,3,1)
 contourf( ...
     squeeze(X(:,iy,:)), ...
