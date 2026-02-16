@@ -15,10 +15,10 @@ set(groot,'defaultLegendInterpreter','latex')
 data = readmatrix('ldc_D3Q27_parallel.dat');
 str_xy = readmatrix('streamfunction_XY.dat');
 
-% Grid size (change according to the simulation resolution)
-nx = 126;
-ny = 126;
-nz = 126;
+% Grid size
+nx = length(unique(data(:,1)));
+ny = length(unique(data(:,2)));
+nz = length(unique(data(:,3)));
 
 X = reshape(data(:,1), nx, ny, nz); 
 Y = reshape(data(:,2), nx, ny, nz); 
