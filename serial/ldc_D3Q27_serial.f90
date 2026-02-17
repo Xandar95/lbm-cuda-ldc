@@ -4,8 +4,10 @@ program lid_driven_cavity_D3Q27
     implicit none
     integer, parameter :: nx = 26, ny = 26, nz = 26 ! Grid dimensions
     integer :: i, j, k, l, t, nstep, i_post, j_post, k_post
+    integer :: k_mid = nz / 2 ! Mid-plane index for streamfunction calculation
     real(8) :: dx, dy, dz, xl, yl, zl, nu, c2, omega, u_lid, Re, cu, u2, start_time, end_time
     real(8), dimension(nx, ny, nz) :: rho, u, v, w, x, y, z, p
+    real(8), dimension(nx, ny) :: u_xy, psi_xy ! for streamfunction calculation
     real(kind=8), dimension(0:26, nx, ny, nz) :: f, f_new ! distribution functions
     real(kind=8), dimension(0:26) :: weights, feq ! lattice weights, equilibrium distribution
     integer, dimension(0:26) :: cx, cy, cz, opp ! lattice velocities and opposite directions
@@ -25,7 +27,7 @@ program lid_driven_cavity_D3Q27
     omega = 1.0d0 / (3.0d0 * nu + 0.5d0) ! Relaxation parameter (SRT model)
     u_lid = Re * nu / (ny - 1) ! Lid velocity in the lattice based on Reynolds number = 0.02
     ! Ma = u_lid / cs should be < 0.1 for incompressible flow
-    nstep = 20000
+    nstep = 10000
 
     ! Lattice weights for D3Q27
     weights = [8.0d0/27.0d0, &                                                                             ! w0
@@ -123,9 +125,6 @@ program lid_driven_cavity_D3Q27
             end do
         end do
 
-        ! Update distributions for next time step
-        f = f_new
-
         ! --- Boundary conditions ---
         ! No-slip walls (bounce-back)
         do j = 1, ny
@@ -133,13 +132,13 @@ program lid_driven_cavity_D3Q27
                 ! West wall (i=1)
                 do l = 0, 26
                     if (cx(l) == 1) then
-                        f(l, 1, j, k) = f(opp(l), 1, j, k)
+                        f_new(l, 1, j, k) = f_new(opp(l), 1, j, k)
                     end if
                 end do
                 ! East wall (i=nx)
                 do l = 0, 26
                     if (cx(l) == -1) then
-                        f(l, nx, j, k) = f(opp(l), nx, j, k)
+                        f_new(l, nx, j, k) = f_new(opp(l), nx, j, k)
                     end if
                 end do
             end do
@@ -150,13 +149,13 @@ program lid_driven_cavity_D3Q27
                 ! South wall (k=1)
                 do l = 0, 26
                     if (cz(l) == 1) then
-                        f(l, i, j, 1) = f(opp(l), i, j, 1)
+                        f_new(l, i, j, 1) = f_new(opp(l), i, j, 1)
                     end if
                 end do
                 ! North wall (k=nz)
                 do l = 0, 26
                     if (cz(l) == -1) then
-                        f(l, i, j, nz) = f(opp(l), i, j, nz)
+                        f_new(l, i, j, nz) = f_new(opp(l), i, j, nz)
                     end if
                 end do
             end do
@@ -167,7 +166,7 @@ program lid_driven_cavity_D3Q27
                 ! Bottom wall (j=1)
                 do l = 0, 26
                     if (cy(l) == 1) then 
-                        f(l, i, 1, k) = f(opp(l), i, 1, k)
+                        f_new(l, i, 1, k) = f_new(opp(l), i, 1, k)
                     end if
                 end do
             end do
@@ -176,15 +175,17 @@ program lid_driven_cavity_D3Q27
         do i = 2, nx-1
             do k = 2, nz-1 ! Exclude corners to avoid double counting
                 ! Top wall (moving lid) (j=ny)
-                ! Calculate density at the lid
+                ! Calculate density at the lid using Zou-He scheme for moving wall
                 rho(i, ny, k) = (1.0d0/(1.0d0 + (2.0d0 * u_lid / 9.0d0))) * &
-                                (f(0, i, ny, k) + f(1, i, ny, k) + f(2, i, ny, k) + f(3, i, ny, k) + f(4, i, ny, k) + &
-                                 f(7, i, ny, k) + f(8, i, ny, k) + f(9, i, ny, k) + f(10, i, ny, k) + &
-                                 2.0d0 * (f(6, i, ny, k) + f(12, i, ny, k) + f(15, i, ny, k) + f(13, i, ny, k) + &
-                                          f(19, i, ny, k) + f(22, i, ny, k) + f(17, i, ny, k) + f(24, i, ny, k) + f(26, i, ny, k)))
+                                (f_new(0, i, ny, k) + f_new(1, i, ny, k) + f_new(2, i, ny, k) + f_new(3, i, ny, k) + &
+                                + f_new(4, i, ny, k) + &
+                                 f_new(7, i, ny, k) + f_new(8, i, ny, k) + f_new(9, i, ny, k) + f_new(10, i, ny, k) + &
+                                 2.0d0 * (f_new(6, i, ny, k) + f_new(12, i, ny, k) + f_new(15, i, ny, k) + &
+                                           f_new(13, i, ny, k) + f_new(19, i, ny, k) + f_new(22, i, ny, k) + &
+                                           f_new(17, i, ny, k) + f_new(24, i, ny, k) + f_new(26, i, ny, k)))
                 do l = 0, 26
                     if (cy(l) == -1) then 
-                        f(l, i, ny, k) = f(opp(l), i, ny, k) + 6.0d0 * weights(l) * rho(i, ny, k) * cx(l) * u_lid
+                        f_new(l, i, ny, k) = f_new(opp(l), i, ny, k) + 6.0d0 * weights(l) * rho(i, ny, k) * cx(l) * u_lid
                     end if
                 end do
             end do
@@ -199,10 +200,10 @@ program lid_driven_cavity_D3Q27
                     v(i, j, k) = 0.0d0
                     w(i, j, k) = 0.0d0
                     do l = 0, 26
-                        rho(i, j, k) = rho(i, j, k) + f(l, i, j, k) ! accumulate density
-                        u(i, j, k) = u(i, j, k) + f(l, i, j, k) * cx(l) ! accumulate x-momentum
-                        v(i, j, k) = v(i, j, k) + f(l, i, j, k) * cy(l) ! accumulate y-momentum
-                        w(i, j, k) = w(i, j, k) + f(l, i, j, k) * cz(l) ! accumulate z-momentum
+                        rho(i, j, k) = rho(i, j, k) + f_new(l, i, j, k)     ! accumulate density
+                        u(i, j, k) = u(i, j, k) + f_new(l, i, j, k) * cx(l) ! accumulate x-momentum
+                        v(i, j, k) = v(i, j, k) + f_new(l, i, j, k) * cy(l) ! accumulate y-momentum
+                        w(i, j, k) = w(i, j, k) + f_new(l, i, j, k) * cz(l) ! accumulate z-momentum
                     end do
                     u(i, j, k) = u(i, j, k) / rho(i, j, k) ! normalize velocity
                     v(i, j, k) = v(i, j, k) / rho(i, j, k) ! normalize velocity
@@ -211,6 +212,9 @@ program lid_driven_cavity_D3Q27
                 end do
             end do
         end do
+
+        ! Update distributions for next time step
+        f = f_new
 
         ! --- Progress output ---
         if (mod(t, 1000) == 0) then
@@ -222,17 +226,44 @@ program lid_driven_cavity_D3Q27
     call cpu_time(end_time) ! End simulation timing
     print *, 'Total simulation time (s): ', end_time - start_time
 
-    ! Output results
+    ! Output results 
     open(unit=10, file='ldc_D3Q27_results.dat', status='replace')
     do i = 1, nx
         do j = 1, ny
             do k = 1, nz
-                write(10,*) x(i, j, k), y(i, j, k), z(i, j, k), u(i, j, k), v(i, j, k), w(i, j, k), p(i, j, k)
+                write(10,*) x(i, j, k), y(i, j, k), z(i, j, k), &
+                u(i, j, k) / u_lid, v(i, j, k) / u_lid, w(i, j, k) / u_lid, p(i, j, k) ! normalized velocities and pressure
             end do
         end do
     end do
     close(10)
 
-    print *, 'Simulation completed. Results written to ldc_D3Q27_results.dat'
+    ! Streamfunction calculation for XY mid-plane
+    ! Extract velocity components on mid planes
+    ! XY plane at z = nz/2
+    do i = 1, nx
+        do j = 1, ny
+            u_xy(i, j) = u(i, j, k_mid)
+        end do
+    end do
+
+    ! Simple finite difference to compute streamfunction (2D)
+    psi_xy = 0.0d0
+    do i = 1, nx
+        do j = 2, ny
+            psi_xy(i, j) = psi_xy(i, j-1) + u_xy(i, j-1) * dy
+        end do
+    end do
+
+    ! Output streamfunction data
+    open(unit=20, file='streamfunction_XY.dat', status='replace')
+    do i = 1, nx
+        do j = 1, ny
+            write(20, *) x(i, j, k_mid), y(i, j, k_mid), psi_xy(i, j)
+        end do
+    end do
+    close(20)
+
+    print *, 'Simulation completed. Results written to ldc_D3Q27_results.dat & streamfunction_XY.dat'
 
 end program lid_driven_cavity_D3Q27
