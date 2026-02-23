@@ -41,4 +41,5 @@ Post-processing of the results done using MATLAB and includes:
 - Velocity contour and streamline plotting
 - Validation plots against reference data
 - Pressure contour and pressure isosurface plotting
+
 ! Post-processing of the serial computed data requires a permutation of the data matrices
