@@ -187,7 +187,7 @@ __global__ void lbm_residual_kernel(const double* __restrict__ f_old,
     // calculate local residual
     double du = u_new - u_old; double dv = v_new - v_old; double dw = w_new - w_old;
     double diff_sq = du * du + dv * dv + dw * dw;
-    double mag_sq = u_new * u_new + v_new * v_new + w_new * w_new;
+    double mag_sq = u_old * u_old + v_old * v_old + w_old * w_old;
 
     // atomic add to accumulate residual across threads
     atomicAdd(diff_acc, diff_sq); // accumulate sum of squared differences
