@@ -10,6 +10,7 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - Both LBM streaming/collision step and boundary conditions embedded in CUDA kernel
 - Written in Fortran (host) and CUDA C++
 - Only global memory and constant memory utilized
+- Convergence criterion to break the time loop as energy change between 1000 time steps reach 10^-6
 
 ## Directory Structure
 - serial/ - Serial Fortran implementation
@@ -19,14 +20,14 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - post-processing/ - Post-processing script and validation data from Ghia et al. (1982)
 
 ## Compilation Requirements
-- NVIDIA GPU (Compute Capability >= 8.0) 
+- NVIDIA GPU (Compute Capability >= 6.0 for the atomicAdd function used for the convergence criterion) 
 - NVIDIA HPC SDK (nvfortran, nvcc)
 - CUDA 12.0 or above
 - gfortran for serial code
 
 ## Build Instructions
 After setting-up the environment, compile using:
-- nvcc -c lbm_kernel.cu -o lbm_kernel
+- nvcc -c lbm_kernel.cu -o lbm_kernel.o -ccbin gcc-12 -arch=sm_60 
 - nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
 - Change the lattice domain sizes as desired
 - Change the memory access patterns in the CUDA kernel as necessary (Note: 1D thread blocks results in better memory coalescence for this algorithm)
