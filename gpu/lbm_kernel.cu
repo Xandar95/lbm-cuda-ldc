@@ -24,14 +24,39 @@ __global__ void lbm_kernel_soa(const double* __restrict__ f_in,
                                int nx, int ny, int nz,
                                double omega)
 {
-    // define global indices
+    int N = nx * ny * nz; // total number of lattice points
+
+    // -------- 3D grid and block configuration --------
+    // define 3D global indices 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
-    if (i >= nx || j >= ny || k >= nz) return; // boundary check
+    if (i >= nx || j >= ny || k >= nz) return; // boundary check for thread space
 
-    int N = nx * ny * nz; // total number of lattice points
     int curr_idx = i + j * nx + k * nx * ny; // current index
+
+    // -------- 2D grid and block configuration --------
+    // define 2D global indices (i, j) 
+    // int i = blockIdx.x * blockDim.x + threadIdx.x;
+    // int j = blockIdx.y * blockDim.y + threadIdx.y;
+    // if (i >= nx || j >= ny) return; // boundary check for thread space
+
+    // loop over k dimension
+    // for (int k = 0; k < nz; k++) {
+    //      int curr_idx = i + j * nx + k * nx * ny;} // wrap the k loop till the end of the kernel
+
+    // -------- 1D grid and block configuration --------
+    // define global 1D linear index
+    // int curr_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    // Boundary check for the 1D thread space 
+    // if (curr_idx >= N) return;
+
+    // deconstruct 1D index back into 3D coordinates (i, j, k)
+    // Formula: i = idx % nx,  j = (idx / nx) % ny,  k = idx / (nx * ny)
+    // int i = curr_idx % nx;
+    // int j = (curr_idx / nx) % ny;
+    // int k = curr_idx / (nx * ny);
 
     // register variables for local calculations
     double f_streamed[27];
@@ -81,14 +106,39 @@ __global__ void apply_bc_kernel(double* __restrict__ f,
                                 int nx, int ny, int nz,
                                 double u_lid)
 {
-    // define global indices
+    int N = nx * ny * nz; // total number of lattice points
+    
+    // -------- 3D grid and block configuration --------
+    // define 3D global indices
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
-    if (i >= nx || j >= ny || k >= nz) return; // boundary check
+    if (i >= nx || j >= ny || k >= nz) return; // boundary check for thread space
 
-    int N = nx * ny * nz;
-    int idx = i + j * nx + k * nx * ny; 
+    int idx = i + j * nx + k * nx * ny; // current index
+
+    // -------- 2D grid and block configuration --------
+    // define 2D global indices (i, j) 
+    // int i = blockIdx.x * blockDim.x + threadIdx.x;
+    // int j = blockIdx.y * blockDim.y + threadIdx.y;
+    // if (i >= nx || j >= ny) return; // boundary check for thread space
+
+    // loop over k dimension
+    // for (int k = 0; k < nz; k++) {
+    //      int idx = i + j * nx + k * nx * ny;} // wrap the k loop till the end of the kernel
+
+    // -------- 1D grid and block configuration --------
+    // define global 1D linear index
+    // int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    // Boundary check for the 1D thread space
+    // if (idx >= N) return;
+
+    // deconstruct 1D index back into 3D coordinates (i, j, k)
+    // Formula: i = idx % nx,  j = (idx / nx) % ny,  k = idx / (nx * ny)
+    // int i = idx % nx;
+    // int j = (idx / nx) % ny;
+    // int k = idx / (nx * ny);
 
     // No slip walls (bounce-back)
     // West wall (i=0)
@@ -151,14 +201,33 @@ __global__ void lbm_residual_kernel(const double* __restrict__ f_old,
                                     double* diff_acc, double* mag_acc,
                                     int nx, int ny, int nz)
 {
-    // define global indices
+    int N = nx * ny * nz; // total number of lattice points
+    
+    // -------- 3D grid and block configuration --------
+    // define 3D global indices
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
-    if (i >= nx || j >= ny || k >= nz) return; // boundary check
+    if (i >= nx || j >= ny || k >= nz) return; // boundary check for thread space
 
-    int N = nx * ny * nz; // total number of lattice points
     int idx = i + j * nx + k * nx * ny; // current index
+
+    // -------- 2D grid and block configuration --------
+    // define 2D global indices (i, j) 
+    // int i = blockIdx.x * blockDim.x + threadIdx.x;
+    // int j = blockIdx.y * blockDim.y + threadIdx.y;
+    // if (i >= nx || j >= ny) return; // boundary check for thread space
+
+    // loop over k dimension
+    // for (int k = 0; k < nz; k++) {
+    //      int idx = i + j * nx + k * nx * ny;} // wrap the k loop till the end of the kernel
+
+    // -------- 1D grid and block configuration --------
+    // define global 1D linear index
+    // int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    // Boundary check for the 1D thread space
+    // if (idx >= N) return;
 
     // calculate velocity from distribution functions
     double rho_old = 0.0, u_old = 0.0, v_old = 0.0, w_old = 0.0;
@@ -201,7 +270,7 @@ void lbm_init_gpu(int nx, int ny, int nz,
                   int* h_cx, int* h_cy, int* h_cz, int* h_opp, double* h_weights)
 {
     size_t size = 27 * nx * ny * nz * sizeof(double);
-    // Allocate persistent device memory for distribution funcitons
+    // Allocate persistent device memory for distribution functions
     cudaMalloc((void**)&d_f_in, size);
     cudaMalloc((void**)&d_f_out, size);
     // Allocate device memory for residual
@@ -226,10 +295,22 @@ void lbm_copy_host_to_device(double* h_f_in, int nx, int ny, int nz)
 void lbm_run_step_gpu(int nx, int ny, int nz, double omega, double u_lid)
 {
     // define block and grid sizes
+    // -------- 3D grid and block configuration --------
     dim3 block(8, 4, 4); // better occupancy with 1D flattened thread blocks
     dim3 grid((nx + block.x - 1) / block.x,
               (ny + block.y - 1) / block.y,
               (nz + block.z - 1) / block.z);
+
+    // -------- 2D grid and block configuration --------
+    // dim3 block(16, 8, 1);
+    // dim3 grid((nx + block.x -1) / block.x,
+    //           (ny + block.y -1) / block.y, 1);
+
+    // -------- 1D grid and block configuration --------
+    // dim3 block(128, 1, 1); 
+    // int N = nx * ny * nz;
+    // dim3 grid((N + block.x - 1) / block.x, 1, 1);
+
     // launch bulk lbm kernel
     lbm_kernel_soa<<<grid, block>>>(d_f_in, d_f_out, nx, ny, nz, omega);
     // launch boundary condition kernel
@@ -249,11 +330,24 @@ double lbm_compute_residual_gpu(int nx, int ny, int nz)
     double zero = 0.0; // initialize to zero for atomic add
     cudaMemcpy(d_diff_sq, &zero, sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_mag_sq, &zero, sizeof(double), cudaMemcpyHostToDevice);
+
     // define block and grid sizes
+    // -------- 3D grid and block configuration --------
     dim3 block(8, 4, 4); // better occupancy with 1D flattened thread blocks
     dim3 grid((nx + block.x - 1) / block.x,
               (ny + block.y - 1) / block.y,
               (nz + block.z - 1) / block.z);
+
+    // -------- 2D grid and block configuration --------
+    // dim3 block(16, 8, 1);
+    // dim3 grid((nx + block.x -1) / block.x,
+    //           (ny + block.y -1) / block.y, 1);
+    
+    // -------- 1D grid and block configuration --------
+    // dim3 block(128, 1, 1); 
+    // int N = nx * ny * nz;
+    // dim3 grid((N + block.x - 1) / block.x, 1, 1);
+
     // launch residual kernel
     lbm_residual_kernel<<<grid, block>>>(d_f_in, d_f_out, d_diff_sq, d_mag_sq, nx, ny, nz);
     // synchronize
@@ -278,6 +372,8 @@ void lbm_free_gpu()
 {
     if (d_f_in) cudaFree(d_f_in);
     if (d_f_out) cudaFree(d_f_out);
+    if (d_diff_sq) cudaFree(d_diff_sq);
+    if (d_mag_sq) cudaFree(d_mag_sq);
 }
 
 } // extern "C"
