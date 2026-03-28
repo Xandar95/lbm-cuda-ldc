@@ -11,6 +11,7 @@ This repository contains serial and GPU-accelerated implementations of a 3D Latt
 - Written in Fortran (host) and CUDA C++
 - Only global memory and constant memory utilized
 - Convergence criterion to break the time loop velocity change between 1000 time steps reach 10^-6
+- 1D, 2D, and 3D grid/block configurations included
 
 ## Directory Structure
 - serial/ - Serial Fortran implementation
@@ -31,7 +32,7 @@ After setting-up the environment, compile using:
 - nvfortran ldc_D3Q27_parallel.f90 lbm_kernel.o -cuda
 - gfortran ldc_D3Q27_serial.f90 -o ldc_D3Q27_serial.exe
 - Change the lattice domain sizes as desired
-- Change the memory access patterns in the CUDA kernel as necessary (Note: 1D thread blocks results in better memory coalescence for this algorithm)
+- Change the memory access patterns in the CUDA kernel as necessary (Note: 1D & 2D thread blocks results in better memory coalescence for this algorithm)
 - The solver outputs velocity (u, v, w components), pressure, and streamfunction for XY plane
 
 ## Post-Processing
