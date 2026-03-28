@@ -181,15 +181,29 @@ __global__ void apply_bc_kernel(double* __restrict__ f,
         }
     }
 
-    // Top wall (j=ny-1) - moving lid
-    if (j == ny - 1 &&  i > 0 && i < nx - 1 && k > 0 && k < nz -1) { // exclude corners
-        // calculate local density (at top wall)
-        double rho_wall = 0.0;
-        for (int l =0; l < 27; l++) rho_wall += f[l * N + idx]; // replace with Zou/He if needed
-        
-        for (int l = 0; l < 27; l++) {
-            if (d_cy[l] == -1) 
-                f[l* N + idx] = f[d_opp[l] * N + idx] + 6.0 * d_weights[l] * rho_wall * d_cx[l] * u_lid;
+    // Top wall (j=ny-1) 
+    if (j == ny - 1) {
+        // Exclude corners/edges for the moving part of the lid
+        if (i > 0 && i < nx - 1 && k > 0 && k < nz - 1) { 
+            
+            // (use Zou-He: rho_wall = sum(cy==0) + 2*sum(cy==1))
+            double rho_wall = 0.0;
+            for (int l = 0; l < 27; l++) {
+                if (d_cy[l] == 0) rho_wall += f[l * N + idx];
+                else if (d_cy[l] == 1) rho_wall += 2.0 * f[l * N + idx];
+            }
+            
+            for (int l = 0; l < 27; l++) {
+                if (d_cy[l] == -1) 
+                    f[l * N + idx] = f[d_opp[l] * N + idx] + 6.0 * d_weights[l] * rho_wall * d_cx[l] * u_lid;
+            }
+        } 
+        else {
+            // Apply stationary bounce-back to the top edges to prevent leakage
+            for (int l = 0; l < 27; l++) {
+                if (d_cy[l] == -1) 
+                    f[l * N + idx] = f[d_opp[l] * N + idx];
+            }
         }
     }
 }

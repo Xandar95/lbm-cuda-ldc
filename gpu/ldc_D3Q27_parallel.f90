@@ -5,7 +5,7 @@ program lid_driven_cavity_D3Q27_parallel
 
     ! Parameters
     integer(c_int), parameter :: nx = 126, ny = 126, nz = 126 ! grid dimensions
-    integer :: nstep = 200000 ! number of time steps (choose large enough for convergence)
+    integer :: nstep = 1.0d6 ! number of time steps (choose large enough for convergence)
     integer :: i, j, k, l, t
     real(c_double) :: xl, yl, zl, dx, dy, dz, nu, Re, c2, omega, u_lid, cu, u2, residual
     integer :: k_mid = nz / 2 ! mid-plane index for streamfunction calculation
@@ -70,7 +70,7 @@ program lid_driven_cavity_D3Q27_parallel
     dz = zl / (nz - 1)
     c2 = 1.0d0 / 3.0d0 ! lattice speed of sound squared for D3Q27 (i.e., cs = c/sqrt(3))
     u_lid = 0.05d0 ! Lid velocity in the lattice
-    Re = 1000.0d0 ! Desired Reynolds number
+    Re = 100.0d0 ! Desired Reynolds number
     nu = u_lid * (ny - 1.0d0) / Re ! Recalculate viscosity based on Re and lid velocity
     omega = 1.0d0 / (3.0d0 * nu + 0.5d0) ! Relaxation parameter (SRT model)
     ! Ma = u_lid / cs should be < 0.1 for incompressibility

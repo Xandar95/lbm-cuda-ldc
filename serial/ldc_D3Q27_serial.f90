@@ -176,10 +176,8 @@ program lid_driven_cavity_D3Q27
             do k = 2, nz-1 ! Exclude corners to avoid double counting
                 ! Top wall (moving lid) (j=ny)
                 ! Calculate density at the lid using Zou-He scheme for moving wall
-                rho(i, ny, k) = (1.0d0/(1.0d0 + (2.0d0 * u_lid / 9.0d0))) * &
-                                (f_new(0, i, ny, k) + f_new(1, i, ny, k) + f_new(2, i, ny, k) + f_new(3, i, ny, k) + &
-                                + f_new(4, i, ny, k) + &
-                                 f_new(7, i, ny, k) + f_new(8, i, ny, k) + f_new(9, i, ny, k) + f_new(10, i, ny, k) + &
+                rho(i, ny, k) = (f_new(0, i, ny, k) + f_new(1, i, ny, k) + f_new(2, i, ny, k) + f_new(3, i, ny, k) + &
+                                + f_new(4, i, ny, k) + f_new(7, i, ny, k) + f_new(8, i, ny, k) + f_new(9, i, ny, k) + f_new(10, i, ny, k) + &
                                  2.0d0 * (f_new(6, i, ny, k) + f_new(12, i, ny, k) + f_new(15, i, ny, k) + &
                                            f_new(13, i, ny, k) + f_new(19, i, ny, k) + f_new(22, i, ny, k) + &
                                            f_new(17, i, ny, k) + f_new(24, i, ny, k) + f_new(26, i, ny, k)))
